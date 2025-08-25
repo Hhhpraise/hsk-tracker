@@ -93,6 +93,8 @@
 
         .main-content {
             padding: 2rem 0;
+            max-width: 100vw;
+            overflow-x: hidden;
         }
 
         .dashboard {
@@ -107,6 +109,16 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .card.tall {
+            max-height: 800px;
+        }
+
+        .card.compact {
+            max-height: 400px;
         }
 
         .card h3 {
@@ -202,16 +214,27 @@
             margin-top: 20px;
         }
 
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
         table th,
         table td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            font-size: 0.9rem;
         }
 
         table th {
             background-color: #f8f9fa;
             font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         table tr:hover {
@@ -220,6 +243,9 @@
 
         .task-list {
             list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
         }
 
         .task-list li {
@@ -241,6 +267,7 @@
         .task-actions {
             display: flex;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         .task-actions button {
@@ -274,16 +301,47 @@
             transform: translateX(0);
         }
 
+        .notification.error {
+            background-color: var(--accent);
+        }
+
+        /* Storage status indicator */
+        .storage-status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            z-index: 1000;
+        }
+
+        .storage-status.success {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .storage-status.error {
+            background-color: var(--accent);
+            color: white;
+        }
+
         /* Heatmap Styles */
         .heatmap-container {
-            overflow-x: auto;
+            overflow: auto;
             margin-top: 20px;
+            max-height: 300px;
+            max-width: 100%;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
         }
 
         .heatmap {
             display: inline-flex;
             flex-direction: column;
             gap: 4px;
+            min-width: fit-content;
         }
 
         .heatmap-row {
@@ -292,11 +350,12 @@
         }
 
         .heatmap-cell {
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
             background-color: #ebedf0;
             position: relative;
+            flex-shrink: 0;
         }
 
         .heatmap-cell[data-score="0"] { background-color: #ebedf0; }
@@ -317,7 +376,7 @@
             border-radius: 3px;
             white-space: nowrap;
             z-index: 100;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .heatmap-legend {
@@ -379,13 +438,29 @@
             }
 
             .heatmap-cell {
-                width: 12px;
-                height: 12px;
+                width: 10px;
+                height: 10px;
             }
 
             .chart-filter {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                max-height: 500px;
+            }
+
+            .table-container {
+                max-height: 300px;
+            }
+
+            .heatmap-container {
+                max-height: 200px;
             }
         }
     </style>
@@ -496,7 +571,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card tall">
             <h3><i class="fas fa-list-check"></i> Today's Tasks</h3>
             <ul class="task-list" id="tasks-list">
                 <!-- Tasks will be added here dynamically -->
@@ -506,13 +581,13 @@
                     <input type="text" id="new-task-title" placeholder="Task title">
                 </div>
                 <div class="form-group">
-                    <textarea id="new-task-desc" placeholder="Task description"></textarea>
+                    <textarea id="new-task-desc" placeholder="Task description" rows="2"></textarea>
                 </div>
                 <button id="add-task-btn">Add Task</button>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card compact">
             <h3><i class="fas fa-calendar"></i> Test Activity Heatmap</h3>
             <div class="heatmap-info" id="heatmap-info">
                 Add your first test score to see the heatmap visualization.
@@ -533,29 +608,35 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card tall">
             <h3><i class="fas fa-history"></i> Recent Scores</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Listening</th>
-                        <th>Reading</th>
-                        <th>Writing</th>
-                        <th>Total</th>
-                        <th>Time Spent</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="scores-table">
-                    <!-- Scores will be added here dynamically -->
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Listening</th>
+                            <th>Reading</th>
+                            <th>Writing</th>
+                            <th>Total</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scores-table">
+                        <!-- Scores will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <div class="notification" id="notification">
         Data saved successfully!
+    </div>
+
+    <div class="storage-status" id="storage-status">
+        <!-- Storage status will be shown here -->
     </div>
 
     <footer>
@@ -566,27 +647,123 @@
     </footer>
 
     <script>
-        // Data storage functions
+        // Enhanced data storage with proper localStorage and error handling
         function saveToLocalStorage(key, data) {
-            // Note: Using variables instead of localStorage for Claude.ai compatibility
-            window[key] = data;
-            showNotification();
+            try {
+                const jsonData = JSON.stringify(data);
+                localStorage.setItem(key, jsonData);
+                updateStorageStatus('success', 'Data saved to browser storage');
+                showNotification('Data saved successfully!', 'success');
+                return true;
+            } catch (error) {
+                console.error('Failed to save to localStorage:', error);
+                updateStorageStatus('error', 'Failed to save data');
+                showNotification('Failed to save data! Your browser storage might be full.', 'error');
+                return false;
+            }
         }
 
         function getFromLocalStorage(key) {
-            return window[key] || null;
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (error) {
+                console.error('Failed to read from localStorage:', error);
+                updateStorageStatus('error', 'Failed to load data');
+                return null;
+            }
         }
 
-        function showNotification() {
+        function updateStorageStatus(type, message) {
+            const statusElement = document.getElementById('storage-status');
+            statusElement.className = `storage-status ${type}`;
+            statusElement.textContent = message;
+
+            // Hide status after 3 seconds
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 3000);
+
+            // Show it again
+            statusElement.style.display = 'block';
+        }
+
+        function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
             notification.classList.add('show');
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 2000);
+            }, 3000);
         }
 
-        // Initialize app data
+        // Check if localStorage is available
+        function isLocalStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Backup and restore functions for data export/import
+        function exportData() {
+            const data = {
+                examDate: getFromLocalStorage('hskExamDate'),
+                tasks: getFromLocalStorage('hskTasks'),
+                scores: getFromLocalStorage('hskScores'),
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `hsk-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    // Validate data structure
+                    if (data.examDate) saveToLocalStorage('hskExamDate', data.examDate);
+                    if (data.tasks) saveToLocalStorage('hskTasks', data.tasks);
+                    if (data.scores) saveToLocalStorage('hskScores', data.scores);
+
+                    // Refresh the app
+                    initAppData();
+                    showNotification('Data imported successfully!', 'success');
+                } catch (error) {
+                    console.error('Failed to import data:', error);
+                    showNotification('Failed to import data! Invalid file format.', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialize app data with better error handling
         function initAppData() {
+            // Check localStorage availability
+            if (!isLocalStorageAvailable()) {
+                updateStorageStatus('error', 'Browser storage not available');
+                showNotification('Warning: Browser storage not available. Data will not be saved!', 'error');
+                return;
+            }
+
             // Set default exam date to 3 months from now if not set
             if (!getFromLocalStorage('hskExamDate')) {
                 const defaultDate = new Date();
@@ -605,7 +782,9 @@
 
             // Load exam date
             const examDate = getFromLocalStorage('hskExamDate');
-            document.getElementById('exam-date-input').value = examDate;
+            if (examDate) {
+                document.getElementById('exam-date-input').value = examDate;
+            }
             updateDaysUntilExam();
 
             // Load tasks and scores
@@ -613,11 +792,16 @@
             loadScores();
             updateProgress();
             generateHeatmap();
+
+            updateStorageStatus('success', 'Data loaded successfully');
         }
 
         // Calculate days until exam
         function updateDaysUntilExam() {
-            const examDate = new Date(document.getElementById('exam-date-input').value);
+            const examDateInput = document.getElementById('exam-date-input').value;
+            if (!examDateInput) return;
+
+            const examDate = new Date(examDateInput);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const timeDiff = examDate.getTime() - today.getTime();
@@ -694,12 +878,11 @@
             };
 
             tasks.push(newTask);
-            saveToLocalStorage('hskTasks', tasks);
-
-            titleInput.value = '';
-            descInput.value = '';
-
-            loadTasks();
+            if (saveToLocalStorage('hskTasks', tasks)) {
+                titleInput.value = '';
+                descInput.value = '';
+                loadTasks();
+            }
         }
 
         // Toggle task completion
@@ -709,8 +892,9 @@
 
             if (taskIndex !== -1) {
                 tasks[taskIndex].completed = !tasks[taskIndex].completed;
-                saveToLocalStorage('hskTasks', tasks);
-                loadTasks();
+                if (saveToLocalStorage('hskTasks', tasks)) {
+                    loadTasks();
+                }
             }
         }
 
@@ -718,8 +902,9 @@
         function deleteTask(taskId) {
             let tasks = getFromLocalStorage('hskTasks') || [];
             tasks = tasks.filter(task => task.id !== taskId);
-            saveToLocalStorage('hskTasks', tasks);
-            loadTasks();
+            if (saveToLocalStorage('hskTasks', tasks)) {
+                loadTasks();
+            }
         }
 
         // Load and display scores
@@ -734,12 +919,11 @@
                 return;
             }
 
+            // Sort scores by date (newest first)
+            scores.sort((a, b) => new Date(b.date) - new Date(a.date));
+
             // Calculate average and best score
             const totalScores = scores.map(score => score.total);
-            const listeningScores = scores.map(score => score.listening);
-            const readingScores = scores.map(score => score.reading);
-            const writingScores = scores.map(score => score.writing);
-
             const averageTotal = totalScores.reduce((sum, score) => sum + score, 0) / totalScores.length;
             const bestTotal = Math.max(...totalScores);
 
@@ -767,7 +951,6 @@
                     <td>${score.total}/300</td>
                     <td>${score.timeSpent} min</td>
                     <td>
-                        <button style="padding: 5px 10px; font-size: 0.9rem;">Edit</button>
                         <button class="btn-accent" style="padding: 5px 10px; font-size: 0.9rem;" onclick="deleteScore(${score.id})">Delete</button>
                     </td>
                 `;
@@ -809,6 +992,12 @@
             const date = document.getElementById('date').value;
             const timeSpent = document.getElementById('time-spent').value;
 
+            // Validate inputs
+            if (!listening || !reading || !writing || !date || !timeSpent) {
+                showNotification('Please fill in all fields!', 'error');
+                return;
+            }
+
             // Calculate scaled scores and total
             const listeningScaled = Math.round((listening / 45) * 100);
             const readingScaled = Math.round((reading / 40) * 100);
@@ -830,24 +1019,27 @@
             };
 
             scores.push(newScore);
-            saveToLocalStorage('hskScores', scores);
+            if (saveToLocalStorage('hskScores', scores)) {
+                // Reset form
+                document.getElementById('score-form').reset();
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('total-score').value = '';
 
-            // Reset form
-            document.getElementById('score-form').reset();
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('total-score').value = '';
-
-            loadScores();
-            generateHeatmap();
+                loadScores();
+                generateHeatmap();
+            }
         }
 
         // Delete score
         function deleteScore(scoreId) {
+            if (!confirm('Are you sure you want to delete this score?')) return;
+
             let scores = getFromLocalStorage('hskScores') || [];
             scores = scores.filter(score => score.id !== scoreId);
-            saveToLocalStorage('hskScores', scores);
-            loadScores();
-            generateHeatmap();
+            if (saveToLocalStorage('hskScores', scores)) {
+                loadScores();
+                generateHeatmap();
+            }
         }
 
         // Update score chart
@@ -912,6 +1104,8 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -964,34 +1158,36 @@
             earliestDate.setHours(0, 0, 0, 0);
 
             // Get exam date
-            const examDate = new Date(document.getElementById('exam-date-input').value);
+            const examDateInput = document.getElementById('exam-date-input').value;
+            if (!examDateInput) return;
+
+            const examDate = new Date(examDateInput);
             examDate.setHours(0, 0, 0, 0);
 
             // Update heatmap info
             const earliestDateStr = earliestDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
+                month: 'short',
                 day: 'numeric'
             });
             const examDateStr = examDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
+                month: 'short',
                 day: 'numeric'
             });
-            heatmapInfo.innerHTML = `Heatmap shows your test activity from <strong>${earliestDateStr}</strong> (first test) to <strong>${examDateStr}</strong> (exam date). Darker green indicates higher scores.`;
+            heatmapInfo.innerHTML = `Study activity from <strong>${earliestDateStr}</strong> to <strong>${examDateStr}</strong>. Darker = higher scores.`;
 
             // Calculate days between first test and exam date
             const timeDiff = examDate.getTime() - earliestDate.getTime();
-            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include both start and end dates
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
 
             // If exam date is before first test, show a warning
             if (daysDiff <= 0) {
-                heatmapInfo.innerHTML = `<strong>Warning:</strong> Your exam date (${examDateStr}) is before or on your first test date (${earliestDateStr}). Please check your exam date.`;
+                heatmapInfo.innerHTML = `<strong>Warning:</strong> Check your exam date - it appears to be before your first test.`;
                 return;
             }
 
-            // Determine how many weeks to show
-            const weeksToShow = Math.ceil(daysDiff / 7);
+            // Limit the heatmap to a reasonable size (max 12 weeks)
+            const maxDays = Math.min(daysDiff, 84); // 12 weeks max
+            const weeksToShow = Math.ceil(maxDays / 7);
 
             // Generate rows for each week
             for (let i = 0; i < weeksToShow; i++) {
@@ -1003,8 +1199,8 @@
                     const cellDate = new Date(earliestDate);
                     cellDate.setDate(earliestDate.getDate() + (i * 7 + j));
 
-                    // Stop if we've passed the exam date
-                    if (cellDate > examDate) break;
+                    // Stop if we've exceeded max days or exam date
+                    if ((i * 7 + j) >= maxDays || cellDate > examDate) break;
 
                     // Format date as YYYY-MM-DD for comparison
                     const dateStr = cellDate.toISOString().split('T')[0];
@@ -1014,8 +1210,6 @@
 
                     // Format date for display
                     const displayDate = cellDate.toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        year: 'numeric',
                         month: 'short',
                         day: 'numeric'
                     });
@@ -1033,7 +1227,7 @@
 
                         cell.setAttribute('data-score', intensity);
                         cell.setAttribute('data-date', displayDate);
-                        cell.setAttribute('data-score-display', `${score}/300 (${Math.round(percentage)}%)`);
+                        cell.setAttribute('data-score-display', `${score}/300`);
                     } else {
                         cell.setAttribute('data-score', 0);
                         cell.setAttribute('data-date', displayDate);
@@ -1048,12 +1242,39 @@
                     heatmap.appendChild(weekRow);
                 }
             }
+
+            // Add note if heatmap was truncated
+            if (daysDiff > 84) {
+                heatmapInfo.innerHTML += ` <small>(Showing last 12 weeks)</small>`;
+            }
         }
 
         // Update progress
         function updateProgress() {
             updateDaysUntilExam();
             // Additional progress calculations can be added here
+        }
+
+        // Add data backup/restore functionality
+        function createBackupButtons() {
+            const backupSection = document.createElement('div');
+            backupSection.innerHTML = `
+                <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                    <h4>Data Backup & Restore</h4>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                        Keep your HSK tracker data safe by creating backups!
+                    </p>
+                    <button onclick="exportData()" style="margin-right: 10px;">Export Data</button>
+                    <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display: none;">
+                    <button onclick="document.getElementById('import-file').click()">Import Data</button>
+                </div>
+            `;
+
+            // Add backup section to the last card
+            const lastCard = document.querySelector('.card:last-of-type');
+            if (lastCard) {
+                lastCard.appendChild(backupSection);
+            }
         }
 
         // Initialize the app
@@ -1070,9 +1291,10 @@
             document.getElementById('add-task-btn').addEventListener('click', addTask);
             document.getElementById('score-form').addEventListener('submit', addScore);
             document.getElementById('exam-date-input').addEventListener('change', function() {
-                saveToLocalStorage('hskExamDate', this.value);
-                updateProgress();
-                generateHeatmap();
+                if (saveToLocalStorage('hskExamDate', this.value)) {
+                    updateProgress();
+                    generateHeatmap();
+                }
             });
 
             // Add event listeners for score inputs to update total
@@ -1093,6 +1315,29 @@
                     addTask();
                 }
             });
+
+            // Create backup/restore buttons
+            createBackupButtons();
+
+            // Auto-save every 30 seconds (optional)
+            setInterval(() => {
+                const tasks = getFromLocalStorage('hskTasks');
+                const scores = getFromLocalStorage('hskScores');
+                const examDate = getFromLocalStorage('hskExamDate');
+
+                if (tasks || scores || examDate) {
+                    updateStorageStatus('success', 'Auto-saved');
+                }
+            }, 30000);
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S to export data
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                exportData();
+            }
         });
     </script>
 </body>
