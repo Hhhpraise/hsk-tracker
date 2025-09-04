@@ -1042,7 +1042,7 @@
             }
         }
 
-        // Update score chart
+        // Update score chart and statistics
         function updateScoreChart(scores) {
             const ctx = document.getElementById('scoreChart').getContext('2d');
             const scoreFilter = document.getElementById('score-filter').value;
@@ -1056,35 +1056,68 @@
                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             });
 
-            let data, label, maxValue;
+            let data, label, maxValue, averageScore, bestScore, scoreType;
 
-            switch(scoreFilter) {
-                case 'listening':
-                    data = sortedScores.map(score => score.listeningScaled);
-                    label = 'Listening Score (/100)';
-                    maxValue = 100;
-                    break;
-                case 'reading':
-                    data = sortedScores.map(score => score.readingScaled);
-                    label = 'Reading Score (/100)';
-                    maxValue = 100;
-                    break;
-                case 'writing':
-                    data = sortedScores.map(score => score.writingScaled);
-                    label = 'Writing Score (/100)';
-                    maxValue = 100;
-                    break;
-                case 'total':
-                default:
-                    data = sortedScores.map(score => score.total);
-                    label = 'Total Score (/300)';
-                    maxValue = 300;
-                    break;
+            // Calculate statistics based on selected filter
+            if (scores.length > 0) {
+                switch(scoreFilter) {
+                    case 'listening':
+                        data = sortedScores.map(score => score.listeningScaled);
+                        label = 'Listening Score (/100)';
+                        maxValue = 100;
+                        averageScore = scores.reduce((sum, score) => sum + score.listeningScaled, 0) / scores.length;
+                        bestScore = Math.max(...scores.map(score => score.listeningScaled));
+                        scoreType = '/100';
+                        break;
+                    case 'reading':
+                        data = sortedScores.map(score => score.readingScaled);
+                        label = 'Reading Score (/100)';
+                        maxValue = 100;
+                        averageScore = scores.reduce((sum, score) => sum + score.readingScaled, 0) / scores.length;
+                        bestScore = Math.max(...scores.map(score => score.readingScaled));
+                        scoreType = '/100';
+                        break;
+                    case 'writing':
+                        data = sortedScores.map(score => score.writingScaled);
+                        label = 'Writing Score (/100)';
+                        maxValue = 100;
+                        averageScore = scores.reduce((sum, score) => sum + score.writingScaled, 0) / scores.length;
+                        bestScore = Math.max(...scores.map(score => score.writingScaled));
+                        scoreType = '/100';
+                        break;
+                    case 'total':
+                    default:
+                        data = sortedScores.map(score => score.total);
+                        label = 'Total Score (/300)';
+                        maxValue = 300;
+                        averageScore = scores.reduce((sum, score) => sum + score.total, 0) / scores.length;
+                        bestScore = Math.max(...scores.map(score => score.total));
+                        scoreType = '/300';
+                        break;
+                }
+            } else {
+                // No scores case
+                data = [];
+                label = 'No Data';
+                maxValue = scoreFilter === 'total' ? 300 : 100;
+                averageScore = 0;
+                bestScore = 0;
+                scoreType = scoreFilter === 'total' ? '/300' : '/100';
             }
+
+            // Update statistics display
+            document.getElementById('average-score').textContent = `${Math.round(averageScore)}${scoreType}`;
+            document.getElementById('best-score').textContent = `${Math.round(bestScore)}${scoreType}`;
+            document.getElementById('tests-taken').textContent = scores.length;
 
             // Destroy previous chart if it exists
             if (window.scoreChartInstance) {
                 window.scoreChartInstance.destroy();
+            }
+
+            // If no scores, don't create a chart
+            if (scores.length === 0) {
+                return;
             }
 
             // Create new chart
